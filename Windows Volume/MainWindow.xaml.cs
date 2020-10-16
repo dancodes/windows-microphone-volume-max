@@ -26,12 +26,13 @@ namespace Windows_Volume
     /// </summary>
     public partial class MainWindow : Window
     {
+        private NotifyIcon ni;
         public MainWindow()
         {
             InitializeComponent();
 
             // Set Tray icon
-            System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
+            ni = new System.Windows.Forms.NotifyIcon();
             // Path iconPath = 
             ni.Icon = Windows_Volume.Properties.Resources.pngegg_CL4_icon;
             ni.Visible = true;
@@ -41,24 +42,30 @@ namespace Windows_Volume
                     this.Show();
                     this.WindowState = System.Windows.WindowState.Normal;
                 };
-            ni.ShowBalloonTip(4000, 
+            
+            ni.ShowBalloonTip(3000, 
                 "Windows Microphone Volume is now running", 
-                "Microphone volume will be permanently", 
+                "Microphone volume will be permanently set to 100%", 
                 ToolTipIcon.Info);
 
             CoreAudioDevice defaultPlaybackDevice = new CoreAudioController().DefaultCaptureDevice;
             defaultPlaybackDevice.Volume = 100;
 
-            Slider s = (Slider)this.FindName("slider");
-            s.Value = defaultPlaybackDevice.Volume;
-
-            defaultPlaybackDevice.VolumeChanged.Subscribe(new VolumeReporter(s));
+            defaultPlaybackDevice.VolumeChanged.Subscribe(new VolumeReporter());
         }
 
         // Minimize to system tray when application is minimized.
         protected override void OnStateChanged(EventArgs e)
         {
-            if (WindowState == WindowState.Minimized) this.Hide();
+            if (WindowState == WindowState.Minimized)
+            {
+                this.Hide();
+
+                ni.ShowBalloonTip(2000,
+                    "Windows Microphone Volume is still running",
+                    "Microphone volume will be permanently set to 100%",
+                    ToolTipIcon.Info);
+            }
 
             base.OnStateChanged(e);
         }
@@ -68,12 +75,7 @@ namespace Windows_Volume
     {
         private IDisposable unsubscriber;
         private bool updating = false;
-        private Slider slider = null;
 
-        public VolumeReporter(Slider s)
-        {
-            slider = s;
-        }
 
         public virtual void Subscribe(IObservable<DeviceVolumeChangedArgs> provider)
         {
@@ -103,9 +105,6 @@ namespace Windows_Volume
 
                 Thread.Sleep(200);
                 value.Device.Volume = 100;
-                slider.Dispatcher.Invoke(() => {
-                    slider.Value = 100;
-                });    
                 updating = false;
             }
         }
