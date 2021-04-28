@@ -8,7 +8,8 @@
         Title="Microphone Volume Set" Height="150" Width="300">
     <Grid VerticalAlignment="Center">
         <StackPanel HorizontalAlignment="Stretch">
-            <TextBlock HorizontalAlignment="Center">Microphone volume is permantently set to max</TextBlock>
+            <TextBlock FontWeight="Bold" FontSize="19" HorizontalAlignment="Center">Microphone levels</TextBlock>
+            <TextBlock x:Name="mainText" HorizontalAlignment="Center">Level is set to 100%</TextBlock>
         </StackPanel>
 
     </Grid>
